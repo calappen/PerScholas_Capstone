@@ -34,15 +34,20 @@ def set_colors(num):
     return ["#"+''.join([random.choice('0123456789ABCDEF') for j in range(6)]) for i in range(num)]
 
 transaction_colors = set_colors(len(cc_df['TRANSACTION_TYPE'].unique()))
-
 cc_df['TRANSACTION_TYPE'].value_counts().plot(kind='barh', figsize=(10, 5), color=transaction_colors, title='Total Transactions Per Category')
-
-plt.show() 
+plt.show()
 
 state_colors = set_colors(len(customer_df['CUST_STATE'].unique()))
-
 customer_df['CUST_STATE'].value_counts().plot(kind='barh', figsize=(10, 5), color=state_colors, title='Total Number of Customers Per State')
+plt.show()
 
-plt.show() 
+highest_20 = customer_cc_df.groupby('CUST_SSN')['TRANSACTION_VALUE'] \
+                           .sum() \
+                           .sort_values(ascending=False) \
+                           .head(20)
+
+highest_colors = set_colors(len(highest_20))
+highest_20.plot(kind='barh', figsize=(10, 5), color=highest_colors, title='Top 20 Total Transaction Amounts Per Customer')
+plt.show()
 
 spark.stop()
