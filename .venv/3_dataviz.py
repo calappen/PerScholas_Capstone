@@ -1,4 +1,3 @@
-from enum import unique
 import findspark
 findspark.init()
 import pyspark
@@ -45,9 +44,19 @@ highest_20 = customer_cc_df.groupby('CUST_SSN')['TRANSACTION_VALUE'] \
                            .sum() \
                            .sort_values(ascending=False) \
                            .head(20)
-
 highest_colors = set_colors(len(highest_20))
-highest_20.plot(kind='barh', figsize=(10, 5), color=highest_colors, title='Top 20 Total Transaction Amounts Per Customer')
+highest_20.plot(kind='barh', figsize=(10, 5), color=highest_colors,
+                title='Top 20 Total Transaction Amounts Per Customer')
+plt.show()
+
+
+top_3_months = cc_df['MONTH'].value_counts() \
+                             .sort_values(ascending=False) \
+                             .head(3)
+top_colors = set_colors(len(top_3_months))
+top_3_months.plot(kind='barh', figsize=(10, 5),
+                  color=top_colors, xlabel='Month', ylabel='# of Transactions',
+                  title='Top 3 Total # of Transaction Per Month')
 plt.show()
 
 spark.stop()
