@@ -59,4 +59,20 @@ top_3_months.plot(kind='barh', figsize=(10, 5),
                   title='Top 3 Total # of Transaction Per Month')
 plt.show()
 
+branch_health = cc_df[cc_df['TRANSACTION_TYPE']=='Healthcare'].groupby('BRANCH_CODE', as_index=False)['TRANSACTION_VALUE'] \
+                                                              .sum() \
+                                                              .sort_values(by='TRANSACTION_VALUE', ascending=False)
+branch_colors = set_colors(len(branch_health))
+branch_health.plot(kind='scatter', x='BRANCH_CODE', y='TRANSACTION_VALUE',
+                   figsize=(30, 10), color=branch_colors, xlabel='Branch #',
+                   ylabel='Total Value of Healthcare Transactions',
+                   title='Total $ Value of Healthcare Transactions Per Branch')
+
+for i in range(len(branch_health)):
+    plt.text(x=branch_health['BRANCH_CODE'][i]+1,
+             y=branch_health['TRANSACTION_VALUE'][i]+20,
+             s=branch_health['BRANCH_CODE'][i])
+
+plt.show()
+
 spark.stop()
