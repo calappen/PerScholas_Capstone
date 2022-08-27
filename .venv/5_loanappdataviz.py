@@ -4,6 +4,10 @@ import pyspark
 from pyspark.sql import SparkSession
 import pandas as pd
 import matplotlib.pyplot as plt
+import random
+
+def set_colors(num):
+    return ["#"+''.join([random.choice('0123456789ABCDEF') for j in range(6)]) for i in range(num)]
 
 spark = SparkSession.builder.appName('Capstone').getOrCreate()
 
@@ -44,6 +48,37 @@ prop_area.plot(kind='barh', figsize=(10,5), width=bar_width,
 
 tick_labels = ['Denied','Approved']
 plt.yticks(ticks=range(len(tick_labels)), labels=tick_labels, rotation=0)
+plt.tight_layout()
+plt.show()
+
+
+approved = loan_df[loan_df['Application_Status']=='Y']
+approved = approved.groupby(['Credit_History','Dependents','Education',
+                            'Gender','Income','Married','Property_Area',
+                            'Self_Employed'])['Application_Status'] \
+                            .value_counts().rename('Number_of_Approvals') \
+                            .to_frame().reset_index().drop('Application_Status',axis=1)
+
+approved_index = []
+for index, row in approved.iterrows():
+    temp_string = ''
+    for i, value in row.items():
+        temp_string += str(value) + ','
+    approved_index.append(temp_string[:-1])
+
+approved = approved[['Number_of_Approvals']]
+approved_index = pd.DataFrame(approved_index, columns=['Demographics'])
+approved_results = pd.concat([approved_index, approved], axis=1).set_index('Demographics') \
+                                                                .transpose()
+
+approved_colors = set_colors(approved_results.size)
+approved_results.plot(kind='barh', figsize=(15,8), color=approved_colors,
+                      width=16, edgecolor='white', linewidth=1.5,
+                      xlabel='Demographics', ylabel='Number of Approved Applications', 
+                      title='Total # of Approved Applications Per Each Demographic')
+
+plt.yticks(ticks=[])
+plt.legend(fontsize='xx-small')
 plt.tight_layout()
 plt.show()
 
