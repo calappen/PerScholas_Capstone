@@ -95,3 +95,13 @@ One project requirement in section 2.2 is having the option to modify a customer
 The Pandas package comes with Matplotlib's graphing functionality and was used to graph the data in section 3 and 5. The package doesn't easily allow for the ability to label points or bars with their values though. This took some research, testing, and time to implement. In the future, the Plotly package may be used instead as it offers a mouseover functionality which could be used to display a point or bar's value when hovering over it.
 ### Demographic Multi-bar Graph
 The graph for section 5.3 was challenging as it is difficult to clearly display each demographic. Each parameter of a demographic was combined into a comma-separated string and used to display each demographic in the legend of the graph. Because of the lengthly list of demographics, the legend extends down past the graph, not properly displaying the full list of demographics. The graph's size was increased and the legend's text was decreased to allow a better view of the legend but some demographics are still being cut off. In the future, the Plotly package would be explored for its mouseover feature and be used to resolve this issue. The demographic string could be displayed when hovering over that demographc's bar in the graph and the legend would not be needed.
+
+## Skillsets
+- Python
+- SQL
+- Apache Spark
+- REST API
+- Git
+- MariaDB
+- Pandas library
+- Matplotlib library
