@@ -6,17 +6,23 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import random
 
+with open("./secret.txt") as f:
+    secret_ls = f.readlines()
+    user_name = secret_ls[0][:-1]
+    user_password = secret_ls[1]
+
 def set_colors(num):
     return ["#"+''.join([random.choice('0123456789ABCDEF') for j in range(6)]) for i in range(num)]
 
 spark = SparkSession.builder.appName('Capstone').getOrCreate()
+print('SparkSession created')
 
 loan_df=spark.read.format("jdbc").options(driver="com.mysql.cj.jdbc.Driver",\
-                                     user="root",\
-                                     password="Pass1234",\
-                                     url="jdbc:mysql://localhost:3306/creditcard_capstone",\
-                                     dbtable="creditcard_capstone.cdw_sapp_loan_application").load().toPandas()
-
+                                          user=user_name,\
+                                          password=user_password,\
+                                          url="jdbc:mysql://localhost:3306/creditcard_capstone",\
+                                          dbtable="creditcard_capstone.cdw_sapp_loan_application").load().toPandas()
+print('Data read from table cdw_sapp_loan_application')
 
 married_income = loan_df[['Application_Status','Gender','Income']]
 married_income = married_income[(married_income['Application_Status']=='Y')].drop(['Application_Status'], axis=1)
@@ -37,7 +43,7 @@ for income, counts in married_income.items():
 plt.xticks(rotation=0)
 plt.tight_layout()
 plt.show()
-
+print('Graph "Application Approvals of Married Applicants Based on Gender and Income Ranges" created')
 
 bar_width=0.5
 prop_area = loan_df[['Application_Status','Property_Area']]
@@ -50,6 +56,7 @@ tick_labels = ['Denied','Approved']
 plt.yticks(ticks=range(len(tick_labels)), labels=tick_labels, rotation=0)
 plt.tight_layout()
 plt.show()
+print('Graph "Application Approvals Based on Property Area" created')
 
 
 approved = loan_df[loan_df['Application_Status']=='Y']
@@ -69,6 +76,7 @@ for index, row in approved.iterrows():
 approved = approved[['Number_of_Approvals']]
 approved_index = pd.DataFrame(approved_index, columns=['Demographics'])
 approved_results = pd.concat([approved_index, approved], axis=1).set_index('Demographics') \
+                                                                .sort_values(by='Number_of_Approvals', ascending=True) \
                                                                 .transpose()
 
 approved_colors = set_colors(approved_results.size)
@@ -81,5 +89,7 @@ plt.yticks(ticks=[])
 plt.legend(fontsize='xx-small')
 plt.tight_layout()
 plt.show()
+print('Graph "Total # of Approved Applications Per Each Demographic" created')
 
 spark.stop()
+print('SparkSession ended')

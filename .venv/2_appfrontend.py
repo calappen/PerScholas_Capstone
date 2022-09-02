@@ -8,22 +8,30 @@ import re
 
 pd.set_option('max_columns', None)
 
+with open("./secret.txt") as f:
+    secret_ls = f.readlines()
+    user_name = secret_ls[0][:-1]
+    user_password = secret_ls[1]
+
+spark = SparkSession.builder.appName('Capstone').getOrCreate()
+print('SparkSession created')
+
 mydb = mysql.connector.connect(
   host="localhost",
-  user="root",
-  password="Pass1234",
+  user=user_name,
+  password=user_password,
   database="creditcard_capstone"
 )
+print('Connected to DB')
 
 mycursor = mydb.cursor()
 
-spark = SparkSession.builder.appName('Capstone').getOrCreate()
-
 customer_df=spark.read.format("jdbc").options(driver="com.mysql.cj.jdbc.Driver",\
-                                     user="root",\
-                                     password="Pass1234",\
-                                     url="jdbc:mysql://localhost:3306/creditcard_capstone",\
-                                     dbtable="creditcard_capstone.cdw_sapp_customer").load().toPandas()
+                                              user=user_name,\
+                                              password=user_password,\
+                                              url="jdbc:mysql://localhost:3306/creditcard_capstone",\
+                                              dbtable="creditcard_capstone.cdw_sapp_customer").load().toPandas()
+print('Data read from table cdw_sapp_customer')
 
 customer_df['SSN'] = customer_df['SSN'].astype(str)
 
@@ -33,25 +41,25 @@ customer_columns.remove('SSN')
 customer_columns.remove('FULL_STREET_ADDRESS')
 
 cc_df=spark.read.format("jdbc").options(driver="com.mysql.cj.jdbc.Driver",\
-                                     user="root",\
-                                     password="Pass1234",\
-                                     url="jdbc:mysql://localhost:3306/creditcard_capstone",\
-                                     dbtable="creditcard_capstone.cdw_sapp_credit_card").load().toPandas()
+                                        user=user_name,\
+                                        password=user_password,\
+                                        url="jdbc:mysql://localhost:3306/creditcard_capstone",\
+                                        dbtable="creditcard_capstone.cdw_sapp_credit_card").load().toPandas()
+print('Data read from table cdw_sapp_credit_card')
 
 cc_df['DAY'] = cc_df['DAY'].str.lstrip('0').astype(int)
 cc_df['MONTH'] = cc_df['MONTH'].str.lstrip('0').astype(int)
 cc_df['TIMEID'] = pd.to_datetime(cc_df['TIMEID'])
 
 branch_df=spark.read.format("jdbc").options(driver="com.mysql.cj.jdbc.Driver",\
-                                     user="root",\
-                                     password="Pass1234",\
-                                     url="jdbc:mysql://localhost:3306/creditcard_capstone",\
-                                     dbtable="creditcard_capstone.cdw_sapp_branch").load().toPandas()
+                                            user=user_name,\
+                                            password=user_password,\
+                                            url="jdbc:mysql://localhost:3306/creditcard_capstone",\
+                                            dbtable="creditcard_capstone.cdw_sapp_branch").load().toPandas()
+print('Data read from table cdw_sapp_branch')
 
 customer_cc_df = pd.merge(customer_df, cc_df, how='inner', left_on='CREDIT_CARD_NO', right_on='CUST_CC_NO')
 branch_cc_df = pd.merge(branch_df, cc_df, how='inner', on='BRANCH_CODE')
-
-
 
 branch_states = pd.unique(branch_df['BRANCH_STATE'])
 transaction_types = pd.unique(cc_df['TRANSACTION_TYPE'])
@@ -258,8 +266,8 @@ while run_main_menu:
                         print('\nInvalid entry. Try again.')
 
                 customer_df=spark.read.format("jdbc").options(driver="com.mysql.cj.jdbc.Driver",\
-                                                              user="root",\
-                                                              password="Pass1234",\
+                                                              user=user_name,\
+                                                              password=user_password,\
                                                               url="jdbc:mysql://localhost:3306/creditcard_capstone",\
                                                               dbtable="creditcard_capstone.cdw_sapp_customer").load().toPandas()
                 
@@ -294,7 +302,6 @@ while run_main_menu:
                         break
                     else:
                         print('\nInvalid entry. Try again.')
-
                 
                 count = 1
                 for c in customer_columns:
@@ -733,5 +740,7 @@ while run_main_menu:
 
 
 spark.stop()
+print('SparkSession ended')
+
 mycursor.close()
 mydb.close()
